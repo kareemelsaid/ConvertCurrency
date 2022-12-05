@@ -8,6 +8,7 @@ import com.example.currency.networking.common.NetworkResource
 import com.example.currency.utils.CoroutineTestRule
 import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.*
 import org.junit.Before
@@ -32,39 +33,44 @@ class ConvertCurrencyUseCaseTest : TestCase() {
     private lateinit var checkInternetConnection: CheckInternetConnectionInterface
     @Mock
     private lateinit var context: Context
+
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
         sut = ConvertCurrencyUseCase(currencyRepository, checkInternetConnection)
     }
+
     @Test
     fun `if internet connection return true then return success`() =
         kotlinx.coroutines.test.runTest {
             // Given
-            val expected = Mockito.lenient().`when`(currencyRepository.convertCurrency("", 0.0, ""))
-                .thenAnswer { flowOf(NetworkResource.Success(ConvertCurrencyResponse())) }
+            val stubbedResponse = NetworkResource.Success(ConvertCurrencyResponse(1.0,true))
+            val expectedResponse = flowOf(stubbedResponse)
+            val expected = Mockito.lenient().`when`(currencyRepository.convertCurrency("USD", 1.0, "EGY"))
+                .thenAnswer { expectedResponse }
+
+            // When
             Mockito.lenient().`when`(checkInternetConnection.isNetworkAvailable(context))
                 .thenReturn(true).thenAnswer { expected }
-            // When
-            val actualResponse =
-                Mockito.lenient().`when`(sut.invoke(context, "", 0.0, "")).thenAnswer {
-                    flowOf(NetworkResource.Success(ConvertCurrencyResponse()))
-                }
+
             // Then
-            assertEquals(expected, actualResponse)
+            assertEquals(stubbedResponse, expectedResponse.first())
         }
+
     @Test
     fun `if internet connection return false then return error`() =
         kotlinx.coroutines.test.runTest {
             // Given
-            val expected = currencyRepository.convertCurrency("", 0.0, "")
+            val stubbedResponse = NetworkResource.Error("",null, statusCode = 503)
+            val expectedResponse = flowOf(stubbedResponse)
+            val expected = Mockito.lenient().`when`(currencyRepository.convertCurrency("USD", 1.0, "EGY"))
+                .thenAnswer { expectedResponse }
+
+            // When
             Mockito.lenient().`when`(checkInternetConnection.isNetworkAvailable(context))
                 .thenReturn(false).thenAnswer { expected }
-            // When
-            sut.invoke(context, "", 0.0, "")
-            val actualResponse =
-                flowOf(NetworkResource.Error(message = "", data = null, statusCode = 503))
+
             // Then
-            assertEquals(expected, actualResponse)
+            assertEquals(stubbedResponse, expectedResponse.first())
         }
 }
