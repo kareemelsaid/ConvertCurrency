@@ -1,0 +1,13 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/after_leads_generation"
+    app:startDestination="@id/convertCurrencyFragment">
+
+
+    <fragment
+        android:id="@+id/convertCurrencyFragment"
+        android:name="com.example.currency.presentationLayer.ConvertCurrencyFragment"
+        android:label="fragment_convert_currency"
+        tools:layout="@layout/fragment_convert_currency" />
+</navigation>
