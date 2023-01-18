@@ -2,10 +2,10 @@ package com.example.currency.networking
 
 import com.example.currency.networking.common.NetworkResource
 import com.google.gson.Gson
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import io.reactivex.rxjava3.core.ObservableOnSubscribe
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.schedulers.Schedulers
 import retrofit2.Response
 
 interface NetworkManagerInterface {
@@ -20,7 +20,22 @@ class NetworkManager : NetworkManagerInterface {
     override fun <T : Any> performRequest(
         request: () -> Response<T>,
     ): Observable<NetworkResource<T>> {
-        return Observable
+        return Observable.create(ObservableOnSubscribe { emitter ->
+            emitter.onNext(NetworkResource.Loading<T>())
+            val response = request.invoke()
+            when (val result = verifyResponse(response)) {
+                is NetworkResource.Loading -> emitter.onNext(NetworkResource.Loading<T>())
+                is NetworkResource.Success -> emitter.onNext(NetworkResource.Success<T>(result.data))
+                is NetworkResource.Error -> result.message.let {
+                    NetworkResource.Error<T>(
+                        it,
+                        statusCode = response.code()
+                    )
+                }
+                    .let { emitter.onNext(it) }
+                else -> {}
+            }
+        }).subscribeOn(Schedulers.io())
     }
 
     private fun <T : Any> verifyResponse(response: Response<T>): NetworkResource<T> {

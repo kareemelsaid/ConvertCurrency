@@ -71,7 +71,7 @@ class ConvertCurrencyFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(fromPrice: CharSequence, start: Int, before: Int, count: Int) {
                 if (fromPrice.isNotEmpty()) {
-                    viewModel.convertCurrency(requireContext(),fromCurrency, fromPrice.toString().toDouble(), toCurrency)
+//                    viewModel.convertCurrency(requireContext(),fromCurrency, fromPrice.toString().toDouble(), toCurrency)
                 }
             }
         })
@@ -82,7 +82,7 @@ class ConvertCurrencyFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (fromCurrency != parent?.selectedItem.toString()) {
-                    viewModel.convertCurrency(requireContext(),parent?.selectedItem.toString(), fromEditText.text.toString().toDouble(), toCurrency)
+//                    viewModel.convertCurrency(requireContext(),parent?.selectedItem.toString(), fromEditText.text.toString().toDouble(), toCurrency)
                 }
                 fromCurrency = parent?.selectedItem.toString()
             }
@@ -94,7 +94,7 @@ class ConvertCurrencyFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (toCurrency != parent?.selectedItem.toString()) {
-                    viewModel.convertCurrency(requireContext(),fromCurrency, fromEditText.text.toString().toDouble(), parent?.selectedItem.toString())
+//                    viewModel.convertCurrency(requireContext(),fromCurrency, fromEditText.text.toString().toDouble(), parent?.selectedItem.toString())
                 }
                 toCurrency = parent?.selectedItem.toString()
             }
@@ -116,24 +116,24 @@ class ConvertCurrencyFragment : Fragment() {
     }
 
     private fun getCurrency() {
-        lifecycleScope.launchWhenStarted {
-            viewModel.getCurrencyState.collectLatest { response ->
-                when (response) {
-                    is NetworkResource.Success -> {
-                        getCurrencySuccessData(response)
-                        progressDialog.dismiss()
-                    }
-                    is NetworkResource.Error<*> -> {
-                        Toast.makeText(requireContext(),response.message, Toast.LENGTH_SHORT).show()
-                        progressDialog.dismiss()
-                    }
-                    is NetworkResource.Loading -> {
-                        progressLoading()
-                    }
-                    else -> {}
-                }
-            }
-        }
+//        lifecycleScope.launchWhenStarted {
+//            viewModel.getCurrencyState.collectLatest { response ->
+//                when (response) {
+//                    is NetworkResource.Success -> {
+//                        getCurrencySuccessData(response)
+//                        progressDialog.dismiss()
+//                    }
+//                    is NetworkResource.Error<*> -> {
+//                        Toast.makeText(requireContext(),response.message, Toast.LENGTH_SHORT).show()
+//                        progressDialog.dismiss()
+//                    }
+//                    is NetworkResource.Loading -> {
+//                        progressLoading()
+//                    }
+//                    else -> {}
+//                }
+//            }
+//        }
     }
 
     private fun convertCurrency() {

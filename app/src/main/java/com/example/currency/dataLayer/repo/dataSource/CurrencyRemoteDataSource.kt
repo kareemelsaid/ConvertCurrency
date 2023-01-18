@@ -10,10 +10,10 @@ import javax.inject.Inject
 interface CurrencyApi {
 
     @GET("https://api.apilayer.com/currency_data/list")
-    suspend fun getCurrency(): Response<CurrencyResponse>
+     fun getCurrency(): Response<CurrencyResponse>
 
     @GET("https://api.apilayer.com/currency_data/convert&from={from}&amount={amount}")
-    suspend fun convertCurrency(
+     fun convertCurrency(
         @Path("from") from: String,
         @Path("amount") amount: Double,
         @Query("to") to: String
@@ -22,10 +22,10 @@ interface CurrencyApi {
 
 interface CurrencyRemoteDataSourceInterface {
 
-    suspend fun getCurrency(
+     fun getCurrency(
     ): Response<CurrencyResponse>
 
-    suspend fun convertCurrency(
+     fun convertCurrency(
         from: String, amount: Double,to: String
     ): Response<ConvertCurrencyResponse>
 }
@@ -34,12 +34,12 @@ class CurrencyRemoteDataSource @Inject constructor(retrofit: Retrofit) :
     CurrencyRemoteDataSourceInterface {
 
     private val api = retrofit.create(CurrencyApi::class.java)
-    override suspend fun getCurrency(
+    override  fun getCurrency(
     ): Response<CurrencyResponse> {
         return api.getCurrency()
     }
 
-    override suspend fun convertCurrency(
+    override  fun convertCurrency(
         from: String,
         amount: Double,
         to: String

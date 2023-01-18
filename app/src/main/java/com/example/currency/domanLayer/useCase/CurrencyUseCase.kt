@@ -6,15 +6,16 @@ import com.example.currency.dataLayer.repo.CurrencyRepository
 import com.example.currency.dataLayer.repo.CurrencyRepositoryInterface
 import com.example.currency.networking.common.CheckInternetConnectionInterface
 import com.example.currency.networking.common.NetworkResource
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
 interface CurrencyUseCaseInterface {
 
-    suspend operator fun invoke(
+     operator fun invoke(
         context: Context
-    ): Flow<NetworkResource<CurrencyResponse>>
+    ): Observable<NetworkResource<CurrencyResponse>>
 }
 
 class CurrencyUseCase @Inject constructor(
@@ -22,17 +23,9 @@ class CurrencyUseCase @Inject constructor(
     private val checkInternetConnection: CheckInternetConnectionInterface,
 ) : CurrencyUseCaseInterface {
 
-    override suspend fun invoke(
+    override fun invoke(
         context: Context
-    ): Flow<NetworkResource<CurrencyResponse>> {
-        return if (checkInternetConnection.isNetworkAvailable(context) == true) {
-            repository.getCurrencyData()
-        } else {
-            noInternetConnection()
+    ): Observable<NetworkResource<CurrencyResponse>> {
+           return repository.getCurrencyData()
         }
     }
-
-    private fun noInternetConnection(): Flow<NetworkResource.Error<Nothing>> {
-        return flowOf(NetworkResource.Error(message = "No Internet Connection", statusCode = 503))
-    }
-}
