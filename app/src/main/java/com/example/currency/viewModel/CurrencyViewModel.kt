@@ -12,6 +12,7 @@ import com.example.currency.networking.common.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observer
+import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ class CurrencyViewModel @Inject constructor(
     val convertCurrencyLiveData = MutableLiveData<ConvertCurrencyResponse>()
     val convertCurrencyLoadingLiveData = MutableLiveData<Boolean>()
     val convertCurrencyErrorMessageLiveData = MutableLiveData<String>()
+    private val compositeDisposable = CompositeDisposable()
 
     fun getCurrency(context: Context) {
         currencyLoadingLiveData.value = true
@@ -52,6 +54,7 @@ class CurrencyViewModel @Inject constructor(
                 }
 
                 override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
                 }
             })
     }
@@ -76,7 +79,13 @@ class CurrencyViewModel @Inject constructor(
                 }
 
                 override fun onSubscribe(d: Disposable) {
+                    compositeDisposable.add(d)
                 }
             })
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
     }
 }
