@@ -12,6 +12,7 @@ import com.example.currency.networking.common.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observer
+import io.reactivex.rxjava3.core.SingleObserver
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -39,22 +40,20 @@ class CurrencyViewModel @Inject constructor(
         currencyUseCase.invoke(context)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(object : Observer<CurrencyResponse> {
-                override fun onNext(countriesStats: CurrencyResponse) {
-                    getCurrencyLiveData.value = countriesStats
-                }
+            .subscribe(object : SingleObserver<CurrencyResponse> {
 
                 override fun onError(e: Throwable) {
                     currencyErrorMessageLiveData.value = e.message
                     currencyLoadingLiveData.value = false
                 }
 
-                override fun onComplete() {
-                    currencyLoadingLiveData.value = false
-                }
-
                 override fun onSubscribe(d: Disposable) {
                     compositeDisposable.add(d)
+                }
+
+                override fun onSuccess(countriesStats: CurrencyResponse) {
+                    getCurrencyLiveData.value = countriesStats
+                    currencyLoadingLiveData.value = false
                 }
             })
     }

@@ -5,11 +5,12 @@ import com.example.currency.dataLayer.model.ConvertCurrencyResponse
 import com.example.currency.dataLayer.model.CurrencyResponse
 import com.example.currency.dataLayer.repo.dataSource.CurrencyRemoteDataSourceInterface
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import javax.inject.Inject
 
 
 interface CurrencyRepositoryInterface {
-    fun getCurrencyData(): Observable<CurrencyResponse>
+    fun getCurrencyData(): Single<CurrencyResponse>
 
     fun convertCurrency(
         from: String,
@@ -23,7 +24,7 @@ class CurrencyRepository @Inject constructor(
 ) : CurrencyRepositoryInterface {
 
     @SuppressLint("CheckResult")
-    override fun getCurrencyData(): Observable<CurrencyResponse> {
+    override fun getCurrencyData(): Single<CurrencyResponse> {
         return currencyRemoteDataSourceInterface.getCurrency()
     }
 

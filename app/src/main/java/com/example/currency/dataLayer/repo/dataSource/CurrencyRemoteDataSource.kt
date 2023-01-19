@@ -3,6 +3,7 @@ package com.example.currency.dataLayer.repo.dataSource
 import com.example.currency.dataLayer.model.ConvertCurrencyResponse
 import com.example.currency.dataLayer.model.CurrencyResponse
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.Single
 import retrofit2.Retrofit
 import retrofit2.http.*
 import javax.inject.Inject
@@ -10,7 +11,7 @@ import javax.inject.Inject
 interface CurrencyApi {
 
     @GET("https://api.apilayer.com/currency_data/list")
-    fun getCurrency(): Observable<CurrencyResponse>
+    fun getCurrency(): Single<CurrencyResponse>
 
     @GET("https://api.apilayer.com/currency_data/convert&from={from}&amount={amount}")
     fun convertCurrency(
@@ -21,7 +22,7 @@ interface CurrencyApi {
 interface CurrencyRemoteDataSourceInterface {
 
     fun getCurrency(
-    ): Observable<CurrencyResponse>
+    ): Single<CurrencyResponse>
 
     fun convertCurrency(
         from: String, amount: Double, to: String
@@ -33,7 +34,7 @@ class CurrencyRemoteDataSource @Inject constructor(retrofit: Retrofit) :
 
     private val api = retrofit.create(CurrencyApi::class.java)
     override fun getCurrency(
-    ): Observable<CurrencyResponse> {
+    ): Single<CurrencyResponse> {
         return api.getCurrency()
     }
 
