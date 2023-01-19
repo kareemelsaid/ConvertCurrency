@@ -18,12 +18,11 @@ interface ConvertCurrencyUseCaseInterface {
         from: String,
         amount: Double,
         to: String
-    ): Observable<NetworkResource<ConvertCurrencyResponse>>
+    ): Observable<ConvertCurrencyResponse>
 }
 
 class ConvertCurrencyUseCase @Inject constructor(
     private val repository: CurrencyRepositoryInterface,
-    private val checkInternetConnection: CheckInternetConnectionInterface,
 ) : ConvertCurrencyUseCaseInterface {
 
     override  fun invoke(
@@ -31,7 +30,7 @@ class ConvertCurrencyUseCase @Inject constructor(
         from: String,
         amount: Double,
         to: String
-    ): Observable<NetworkResource<ConvertCurrencyResponse>> {
+    ): Observable<ConvertCurrencyResponse> {
         return repository.convertCurrency(from, amount, to)
     }
 }

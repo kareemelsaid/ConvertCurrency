@@ -13,19 +13,18 @@ import javax.inject.Inject
 
 interface CurrencyUseCaseInterface {
 
-     operator fun invoke(
+    operator fun invoke(
         context: Context
-    ): Observable<NetworkResource<CurrencyResponse>>
+    ): Observable<CurrencyResponse>
 }
 
 class CurrencyUseCase @Inject constructor(
-    private val repository: CurrencyRepositoryInterface,
-    private val checkInternetConnection: CheckInternetConnectionInterface,
+    private val repository: CurrencyRepositoryInterface
 ) : CurrencyUseCaseInterface {
 
     override fun invoke(
         context: Context
-    ): Observable<NetworkResource<CurrencyResponse>> {
-           return repository.getCurrencyData()
-        }
+    ): Observable<CurrencyResponse> {
+        return repository.getCurrencyData()
     }
+}

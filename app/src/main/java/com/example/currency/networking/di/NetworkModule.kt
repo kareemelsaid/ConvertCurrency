@@ -1,8 +1,6 @@
 package com.example.currency.networking.di
 
 import com.example.currency.networking.NetworkConfig
-import com.example.currency.networking.NetworkManager
-import com.example.currency.networking.NetworkManagerInterface
 import com.example.currency.networking.ParametersInterceptor
 import dagger.Module
 import dagger.Provides
@@ -29,11 +27,6 @@ object NetworkModule {
             .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
             .baseUrl(NetworkConfig.baseUrl)
             .build()
-    }
-    @Provides
-    @Singleton
-    fun provideNetworkManager(): NetworkManagerInterface {
-        return NetworkManager()
     }
     @Provides
     @Singleton

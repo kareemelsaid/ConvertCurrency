@@ -11,6 +11,9 @@ import com.example.currency.networking.common.ErrorResponseHandlerInterface
 import com.example.currency.networking.common.NetworkResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observer
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
@@ -18,38 +21,62 @@ import javax.inject.Inject
 @HiltViewModel
 class CurrencyViewModel @Inject constructor(
     private val currencyUseCase: CurrencyUseCaseInterface,
-    private val convertCurrencyUseCase: ConvertCurrencyUseCaseInterface,
-    private val errorResponseHandlerInterface: ErrorResponseHandlerInterface,
+    private val convertCurrencyUseCase: ConvertCurrencyUseCaseInterface
 ) :
     ViewModel() {
 
-    private val getCurrencyState = MutableLiveData<NetworkResource<CurrencyResponse?>>()
-    private val _convertCurrencyState =
-        MutableStateFlow<NetworkResource<ConvertCurrencyResponse>>(NetworkResource.Noun())
-    val convertCurrencyState = _convertCurrencyState.asStateFlow()
+    val getCurrencyLiveData = MutableLiveData<CurrencyResponse>()
+    val currencyLoadingLiveData = MutableLiveData<Boolean>()
+    val currencyErrorMessageLiveData = MutableLiveData<String>()
+    val convertCurrencyLiveData = MutableLiveData<ConvertCurrencyResponse>()
+    val convertCurrencyLoadingLiveData = MutableLiveData<Boolean>()
+    val convertCurrencyErrorMessageLiveData = MutableLiveData<String>()
 
     fun getCurrency(context: Context) {
-        val observable = currencyUseCase.invoke(context).subscribeOn(AndroidSchedulers.mainThread())
-        observable.subscribe(getCurrencyState.)
-    }
+        currencyLoadingLiveData.value = true
+        currencyUseCase.invoke(context)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : Observer<CurrencyResponse> {
+                override fun onNext(countriesStats: CurrencyResponse) {
+                    getCurrencyLiveData.value = countriesStats
+                }
+
+                override fun onError(e: Throwable) {
+                    currencyErrorMessageLiveData.value = e.message
+                    currencyLoadingLiveData.value = false
+                }
+
+                override fun onComplete() {
+                    currencyLoadingLiveData.value = false
+                }
+
+                override fun onSubscribe(d: Disposable) {
+                }
+            })
     }
 
-    fun convertCurrency(context: Context,from: String, amount: Double, to: String) {
-//        viewModelScope.launch {
-//            convertCurrencyUseCase(context,from, amount, to).collect {
-//                when (it) {
-//                    is NetworkResource.Success -> {
-//                        _convertCurrencyState.value = NetworkResource.Success(it.data)
-//                    }
-//                    is NetworkResource.Error -> {
-//                        val message = errorResponseHandlerInterface.handleDefaultError(it.statusCode)
-//                        _convertCurrencyState.value = NetworkResource.Error(message, statusCode = it.statusCode)
-//                    }
-//                    is NetworkResource.Loading -> {
-//                        _convertCurrencyState.value = NetworkResource.Loading()
-//                    }
-//                    else -> {}
-//                }
-//            }
-//        }
+    fun convertCurrency(context: Context, from: String, amount: Double, to: String) {
+        convertCurrencyLoadingLiveData.value = true
+        convertCurrencyUseCase.invoke(context, from, amount, to)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(object : Observer<ConvertCurrencyResponse> {
+                override fun onNext(convertCurrencyResponse: ConvertCurrencyResponse) {
+                    convertCurrencyLiveData.value = convertCurrencyResponse
+                }
+
+                override fun onError(e: Throwable) {
+                    convertCurrencyErrorMessageLiveData.value = e.message
+                    convertCurrencyLoadingLiveData.value = false
+                }
+
+                override fun onComplete() {
+                    convertCurrencyLoadingLiveData.value = false
+                }
+
+                override fun onSubscribe(d: Disposable) {
+                }
+            })
     }
+}

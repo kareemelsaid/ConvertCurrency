@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.example.currency.R
 import com.example.currency.dataLayer.model.Currencies
@@ -69,9 +70,19 @@ class ConvertCurrencyFragment : Fragment() {
         fromEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable) {}
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(fromPrice: CharSequence, start: Int, before: Int, count: Int) {
+            override fun onTextChanged(
+                fromPrice: CharSequence,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
                 if (fromPrice.isNotEmpty()) {
-//                    viewModel.convertCurrency(requireContext(),fromCurrency, fromPrice.toString().toDouble(), toCurrency)
+                    viewModel.convertCurrency(
+                        requireContext(),
+                        fromCurrency,
+                        fromPrice.toString().toDouble(),
+                        toCurrency
+                    )
                 }
             }
         })
@@ -80,21 +91,41 @@ class ConvertCurrencyFragment : Fragment() {
     private fun fromCurrencySpinner() {
         fromSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 if (fromCurrency != parent?.selectedItem.toString()) {
-//                    viewModel.convertCurrency(requireContext(),parent?.selectedItem.toString(), fromEditText.text.toString().toDouble(), toCurrency)
+                    viewModel.convertCurrency(
+                        requireContext(),
+                        parent?.selectedItem.toString(),
+                        fromEditText.text.toString().toDouble(),
+                        toCurrency
+                    )
                 }
                 fromCurrency = parent?.selectedItem.toString()
             }
         }
     }
 
-    private fun toCurrencySpinner(){
+    private fun toCurrencySpinner() {
         toSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
                 if (toCurrency != parent?.selectedItem.toString()) {
-//                    viewModel.convertCurrency(requireContext(),fromCurrency, fromEditText.text.toString().toDouble(), parent?.selectedItem.toString())
+                    viewModel.convertCurrency(
+                        requireContext(),
+                        fromCurrency,
+                        fromEditText.text.toString().toDouble(),
+                        parent?.selectedItem.toString()
+                    )
                 }
                 toCurrency = parent?.selectedItem.toString()
             }
@@ -116,50 +147,32 @@ class ConvertCurrencyFragment : Fragment() {
     }
 
     private fun getCurrency() {
-//        lifecycleScope.launchWhenStarted {
-//            viewModel.getCurrencyState.collectLatest { response ->
-//                when (response) {
-//                    is NetworkResource.Success -> {
-//                        getCurrencySuccessData(response)
-//                        progressDialog.dismiss()
-//                    }
-//                    is NetworkResource.Error<*> -> {
-//                        Toast.makeText(requireContext(),response.message, Toast.LENGTH_SHORT).show()
-//                        progressDialog.dismiss()
-//                    }
-//                    is NetworkResource.Loading -> {
-//                        progressLoading()
-//                    }
-//                    else -> {}
-//                }
-//            }
-//        }
-    }
-
-    private fun convertCurrency() {
-        lifecycleScope.launchWhenStarted {
-            viewModel.convertCurrencyState.collectLatest { response ->
-                when (response) {
-                    is NetworkResource.Success -> {
-                        toCurrencyValue.text = response.data?.result.toString()
-                        progressDialog.dismiss()
-                    }
-                    is NetworkResource.Error<*> -> {
-                        Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
-                        progressDialog.dismiss()
-                    }
-                    is NetworkResource.Loading -> {
-                        progressLoading()
-                    }
-                    else -> {}
-                }
-            }
+        viewModel.getCurrencyLiveData.observe(viewLifecycleOwner) {
+            getCurrencySuccessData(it)
+        }
+        viewModel.currencyLoadingLiveData.observe(viewLifecycleOwner) {
+            if (it) progressLoading() else progressDialog.dismiss()
+        }
+        viewModel.currencyErrorMessageLiveData.observe(viewLifecycleOwner) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun getCurrencySuccessData(response:NetworkResource<CurrencyResponse?>){
+    private fun convertCurrency() {
+        viewModel.convertCurrencyLiveData.observe(viewLifecycleOwner) {
+            toCurrencyValue.text = it?.result.toString()
+        }
+        viewModel.convertCurrencyLoadingLiveData.observe(viewLifecycleOwner) {
+            if (it) progressLoading() else progressDialog.dismiss()
+        }
+        viewModel.convertCurrencyErrorMessageLiveData.observe(viewLifecycleOwner) {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun getCurrencySuccessData(response: CurrencyResponse?) {
         val countriesList = ArrayList<String>()
-        val currencies = response.data?.currencies
+        val currencies = response?.currencies
         currencies?.asMap()?.keys?.forEach { countriesList.add(it) }
         spinnerAdapter(countriesList)
         fromCurrency = countriesList[defaultIndex]
